@@ -1,0 +1,81 @@
+@prefix fuseki:  <http://jena.apache.org/fuseki#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix :        <#> .
+
+[] rdf:type fuseki:Server ;
+
+   fuseki:services (
+     <#memory>
+     <#tdb>
+  ) .
+
+# Declaration additional assembler items.
+[] ja:loadClass "org.apache.jena.tdb.TDB" .
+
+# TDB
+tdb:DatasetTDB  rdfs:subClassOf  ja:RDFDataset .
+tdb:GraphTDB    rdfs:subClassOf  ja:Model .
+
+########################################################################
+#In Memory    
+
+<#memory>  rdf:type fuseki:Service ;
+    rdfs:label                      "Memory Service (RW)" ;
+    fuseki:name                     "memory" ;
+    fuseki:serviceQuery             "query" ;
+    fuseki:serviceQuery             "sparql" ;
+    fuseki:serviceUpdate            "update" ;
+    fuseki:serviceUpload            "upload" ;
+    fuseki:serviceReadWriteGraphStore      "memory" ;
+    # A separate read-only graph store endpoint:
+    fuseki:serviceReadGraphStore       "getmem" ;
+    fuseki:dataset           <#dataset1> ;       #select which set to 
+    .                                            #use
+    
+
+
+
+<#dataset1> rdf:type       ja:RDFDataset ;
+    ja:defaultGraph       <#model_inf_1> ;
+    .
+
+<#model_inf_1> rdfs:label "Inf-1" ;
+        ja:reasoner
+         [ ja:reasonerURL 
+           <http://jena.hpl.hp.com/2003/OWLFBRuleReasoner>];
+    . 
+
+########################################################################
+# TDB
+<#tdb>  rdf:type fuseki:Service ;
+    rdfs:label                      "TDB Service (RW)" ;
+    fuseki:name                     "data" ;
+    fuseki:serviceQuery             "query" ;
+    fuseki:serviceQuery             "sparql" ;
+    fuseki:serviceUpdate            "update" ;
+    fuseki:serviceUpload            "upload" ;
+    fuseki:serviceReadWriteGraphStore      "data" ;
+    # A separate read-only graph store endpoint:
+    fuseki:serviceReadGraphStore       "get" ;
+    fuseki:dataset           <#dataset2> ;       #select which set to 
+    .                                            #use
+tdb:GraphTDB    rdfs:subClassOf  ja:Model .
+
+<#dataset2> rdf:type ja:RDFDataset ;
+    ja:defaultGraph <#model2>; 
+    .         
+
+<#model2> a ja:InfModel;
+    ja:baseModel <#tdbGraph>;
+    ja:reasoner
+         [ ja:reasonerURL 
+           <http://jena.hpl.hp.com/2003/OWLFBRuleReasoner>];
+    .
+<#tdbGraph> rdf:type tdb:GraphTDB;
+                     tdb:location "DB";
+    .
+
+########################################################################
